@@ -18,6 +18,8 @@ Opus 5.5        ·high     · ctx  12%( 24.0k/200.0k)   · cache  91%( 21.8k rd)
 
 Requirements: `bash` 4.3+, `jq`, `git`, `awk`, `sed`, and GNU `date` (the script uses `date -d`, so it works on Linux; macOS needs coreutils).
 
+This follows the manual setup in the Claude Code docs: [Manually configure a status line](https://code.claude.com/docs/en/statusline#manually-configure-a-status-line).
+
 1. Save the script, for example as `~/.claude/statusline.sh`.
 2. Add it to `~/.claude/settings.json`:
 
@@ -32,6 +34,8 @@ Requirements: `bash` 4.3+, `jq`, `git`, `awk`, `sed`, and GNU `date` (the script
    ```
 
 `refreshInterval` re-runs the script every 10 seconds even when nothing else happens, so the cache time-to-live countdown stays current.
+
+If the status line doesn't appear, see the docs' [Troubleshooting](https://code.claude.com/docs/en/statusline#troubleshooting) section.
 
 ## Layout
 
