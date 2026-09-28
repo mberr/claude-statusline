@@ -16,7 +16,19 @@ Opus 5.5        ·high     · ctx  12%( 24.0k/200.0k)   · cache  91%( 21.8k rd)
 
 ## Install
 
-Requirements: `bash` 4.3+, `jq`, `git`, `awk`, `sed`, and GNU `date` (the script uses `date -d`, so it works on Linux; macOS needs coreutils).
+### Requirements
+
+| Tool | Used for |
+|---|---|
+| `bash` 4.3+ | Running the script (uses associative arrays) |
+| `jq` | Reading the JSON that Claude Code sends to the script |
+| `git` | The current branch |
+| `awk`, `sed` | Number formatting and measuring text width |
+| GNU `date` | Reset times and the cache countdown (uses `date -d`) |
+
+On Linux, everything except `jq` (and possibly `git`) usually comes preinstalled. On macOS, the built-in `bash` (3.2) and `date` don't work with this script: install `bash` and `coreutils` with Homebrew, and put coreutils' `gnubin` directory first on your `PATH` so `date` is the GNU version. The script hasn't been tested on macOS.
+
+### Setup
 
 This follows the manual setup in the Claude Code docs: [Manually configure a status line](https://code.claude.com/docs/en/statusline#manually-configure-a-status-line).
 
