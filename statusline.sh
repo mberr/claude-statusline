@@ -144,6 +144,14 @@ if [ -n "$cwd" ]; then
     branch=$(GIT_OPTIONAL_LOCKS=0 git -C "$cwd" symbolic-ref --short HEAD 2>/dev/null)
 fi
 ident="$(whoami)@$(hostname -s)"
+# Open PR (or GitLab MR) for the current branch, mirroring the footer's PR
+# badge: "PR #123" / "MR !123" after a gray "→", colored by review state,
+# linked via OSC 8.
+# Absent (and nothing shown) when there is no open PR for the branch.
+pr_num=$(get '.pr.number')
+pr_url=$(get '.pr.url')
+pr_state=$(get '.pr.review_state')
+pr_kind=$(get '.pr.kind')
 # Show paths under $HOME as ~/... (only on a whole path-component match).
 cwd_disp="${cwd:---}"
 case "$cwd" in
@@ -263,11 +271,12 @@ if [ "${COLUMNS:-0}" -gt 0 ] 2>/dev/null; then
 fi
 SEP_W=3   # visible width of SEP (" · ")
 
-# Visible width of a painted segment: strip ANSI codes, then count characters
+# Visible width of a painted segment: strip ANSI colors and OSC 8 links, then
+# count characters
 # (not bytes -- the glyphs ·, → and ⏱ are multibyte in UTF-8).
 vis_width() {
     local LC_ALL=C.UTF-8 s
-    s=$(printf '%s' "$1" | sed $'s/\033\\[[0-9;]*m//g')
+    s=$(printf '%s' "$1" | sed -e $'s/\033\\[[0-9;]*m//g' -e $'s/\033]8;;[^\a]*\a//g')
     printf '%d' "${#s}"
 }
 spaces() { printf '%*s' "$1" ''; }
@@ -346,14 +355,32 @@ print_grid() {
 # --- Line 1: user@host · cwd · branch ----------------------------------------
 cwd_txt=$cwd_disp
 branch_txt=${branch:---}
+pr_txt="" pr_painted=""
+if [ -n "$pr_num" ]; then
+    if [ "$pr_kind" = "mr" ]; then pr_txt="MR !${pr_num}"; else pr_txt="PR #${pr_num}"; fi
+    case "$pr_state" in
+        approved)          pr_color=$BRIGHT_GREEN ;;
+        changes_requested) pr_color=$CRIT ;;
+        pending)           pr_color=$BRIGHT_YELLOW ;;
+        draft)             pr_color=$GRAY ;;
+        *)                 pr_color=$BRIGHT_WHITE ;;
+    esac
+    pr_painted=$(paint "$pr_color" "$pr_txt")
+    # OSC 8 hyperlink: clickable in terminals that support it.
+    [ -n "$pr_url" ] && pr_painted=$'\033]8;;'"${pr_url}"$'\a'"${pr_painted}"$'\033]8;;\a'
+    pr_painted="${GRAY} → ${RESET}${pr_painted}"
+fi
 if (( avail > 0 )); then
     cwd_txt=$(truncate_left "$cwd_txt" "$avail")
-    branch_txt=$(truncate_right "$branch_txt" "$avail")
+    # Reserve room for the PR badge so only the branch name gets shortened.
+    br_max=$(( avail - ${#pr_txt} - (${#pr_txt} ? 3 : 0) ))
+    (( br_max < 2 )) && br_max=2
+    branch_txt=$(truncate_right "$branch_txt" "$br_max")
 fi
 location=(
     "$(paint "$BRIGHT_GREEN" "$ident")"
     "$(paint "$BRIGHT_BLUE" "$cwd_txt")"
-    "$(paint "$BRIGHT_YELLOW" "$branch_txt")"
+    "$(paint "$BRIGHT_YELLOW" "$branch_txt")${pr_painted}"
 )
 
 # --- Output --------------------------------------------------------------------

@@ -3,14 +3,14 @@
 A three-line [status line](https://code.claude.com/docs/en/statusline) for Claude Code that shows where you are, the state of the current session, and your usage limits and cost. It fits itself to the terminal width.
 
 ```
-user@host                 · ~/code/my-project         · main
+user@host                 · ~/code/my-project         · main → PR #42
 Opus 5.5        ·high     · ctx  12%( 24.0k/200.0k)   · cache  91%( 21.8k rd) ⏱   42m
 5h  34%→15:20             · 7d  75%→ Wed 20:53        · $  3.14
 ```
 
 | Line | Shows |
 |---|---|
-| 1. Location | `user@host`, working directory (`~` for your home directory), git branch |
+| 1. Location | `user@host`, working directory (`~` for your home directory), git branch, and the open pull request for the branch, if there is one |
 | 2. Session | Model and reasoning effort; context window used (% and tokens used / window size); prompt-cache hit rate, tokens read from cache, and time left before the cache expires |
 | 3. Billing | Usage of the 5-hour and 7-day rate-limit windows, with reset times; estimated session cost in USD |
 
@@ -74,6 +74,7 @@ A value that crosses a threshold is shown on a yellow background (warning) or re
 
 - **Rate limits** are only reported for claude.ai Pro and Max subscriptions (or behind a Claude apps gateway with spend limits), and only after the first response of a session. Otherwise they show as `--`.
 - **Cost** is Claude Code's own estimate for the current session, calculated from token counts at API list prices. On a subscription it is not what you pay. To see your usage-credit spend, run `/usage`, or open [Settings → Usage](https://claude.ai/settings/usage) on claude.ai for your credit balance.
+- **Pull request** works like the PR badge in Claude Code's footer. It shows `PR #123` (or `MR !123` for a GitLab merge request) once Claude Code finds an open PR for the branch, and disappears when the PR is merged or closed. The color shows the review state: green for approved, yellow for pending, red background for changes requested, gray for draft. In terminals that support OSC 8 hyperlinks, it is a clickable link to the PR.
 - **Weekday names** for the 7-day reset follow your system language (`LC_TIME`).
 
 ## License
